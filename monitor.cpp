@@ -9,14 +9,20 @@
 using std::cout, std::flush, std::this_thread::sleep_for, std::chrono::seconds;
 
 // ---------- Data structures ----------
+struct VitalThreshold {
+    std::string name;
+    float minVal;
+    float maxVal;
+};
+
 struct VitalStatus {
     bool ok;
     std::string message;
 };
 
-VitalStatus checkVital(float value, float minVal, float maxVal, const std::string& name) {
-    if (value < minVal || value > maxVal) {
-        return {false, name + " is out of range!"};
+VitalStatus checkVital(float value, const VitalThreshold& threshold) {
+    if (value < threshold.minVal || value > threshold.maxVal) {
+        return {false, threshold.name + " is out of range!"};
     }
     return {true, ""};
 }
@@ -32,22 +38,33 @@ void blinkWarning(int secondsDuration = 6) {
     cout << "\n";
 }
 
-int vitalsOk(float temperature, float pulseRate, float spo2) {
-    std::vector<VitalStatus> results = {
-        checkVital(temperature, 95, 102, "Temperature"),
-        checkVital(pulseRate, 60, 100, "Pulse Rate"),
-        checkVital(spo2, 90, 100, "Oxygen Saturation")
-    };
-
-    bool anyCritical = false;
-    for (const auto& result : results) {
+// Helper: Collect all abnormal vitals
+std::vector<std::string> collectCriticalVitals(
+    const std::vector<std::pair<float, VitalThreshold>>& vitals) {
+    
+    std::vector<std::string> messages;
+    for (const auto& vital : vitals) {
+        VitalStatus result = checkVital(vital.first, vital.second);
         if (!result.ok) {
-            cout << result.message << "\n";
-            anyCritical = true;
+            messages.push_back(result.message);
         }
     }
+    return messages;
+}
 
-    if (anyCritical) {
+int vitalsOk(float temperature, float pulseRate, float spo2) {
+    std::vector<std::pair<float, VitalThreshold>> vitals = {
+        {temperature, {"Temperature", 95, 102}},
+        {pulseRate, {"Pulse Rate", 60, 100}},
+        {spo2, {"Oxygen Saturation", 90, 100}}
+    };
+
+    std::vector<std::string> warnings = collectCriticalVitals(vitals);
+
+    if (!warnings.empty()) {
+        for (const auto& msg : warnings) {
+            cout << msg << "\n";
+        }
         blinkWarning();
         return 0;
     }
