@@ -1,42 +1,3 @@
-// #include "./monitor.h"
-// #include <assert.h>
-// #include <thread>
-// #include <chrono>
-// #include <iostream>
-// using std::cout, std::flush, std::this_thread::sleep_for, std::chrono::seconds;
-
-// int vitalsOk(float temperature, float pulseRate, float spo2) {
-//   if (temperature > 102 || temperature < 95) {
-//     cout << "Temperature is critical!\n";
-//     for (int i = 0; i < 6; i++) {
-//       cout << "\r* " << flush;
-//       sleep_for(seconds(1));
-//       cout << "\r *" << flush;
-//       sleep_for(seconds(1));
-//     }
-//     return 0;
-//   } else if (pulseRate < 60 || pulseRate > 100) {
-//     cout << "Pulse Rate is out of range!\n";
-//     for (int i = 0; i < 6; i++) {
-//       cout << "\r* " << flush;
-//       sleep_for(seconds(1));
-//       cout << "\r *" << flush;
-//       sleep_for(seconds(1));
-//     }
-//     return 0;
-//   } else if (spo2 < 90) {
-//     cout << "Oxygen Saturation out of range!\n";
-//     for (int i = 0; i < 6; i++) {
-//       cout << "\r* " << flush;
-//       sleep_for(seconds(1));
-//       cout << "\r *" << flush;
-//       sleep_for(seconds(1));
-//     }
-//     return 0;
-//   }
-//   return 1;
-// }
-
 #include "./monitor.h"
 #include <iostream>
 #include <thread>
@@ -53,24 +14,9 @@ struct VitalStatus {
     std::string message;
 };
 
-// ---------- Pure functions (no I/O) ----------
-VitalStatus checkTemperature(float temperature) {
-    if (temperature < 95 || temperature > 102) {
-        return {false, "Temperature is critical!"};
-    }
-    return {true, ""};
-}
-
-VitalStatus checkPulse(float pulseRate) {
-    if (pulseRate < 60 || pulseRate > 100) {
-        return {false, "Pulse Rate is out of range!"};
-    }
-    return {true, ""};
-}
-
-VitalStatus checkSpo2(float spo2) {
-    if (spo2 < 90) {
-        return {false, "Oxygen Saturation out of range!"};
+VitalStatus checkVital(float value, float minVal, float maxVal, const std::string& name) {
+    if (value < minVal || value > maxVal) {
+        return {false, name + " is out of range!"};
     }
     return {true, ""};
 }
@@ -88,9 +34,9 @@ void blinkWarning(int secondsDuration = 6) {
 
 int vitalsOk(float temperature, float pulseRate, float spo2) {
     std::vector<VitalStatus> results = {
-        checkTemperature(temperature),
-        checkPulse(pulseRate),
-        checkSpo2(spo2)
+        checkVital(temperature, 95, 102, "Temperature"),
+        checkVital(pulseRate, 60, 100, "Pulse Rate"),
+        checkVital(spo2, 90, 100, "Oxygen Saturation")
     };
 
     auto it = std::find_if(results.begin(), results.end(),
