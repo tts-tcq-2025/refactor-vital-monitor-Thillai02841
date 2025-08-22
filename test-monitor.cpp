@@ -19,9 +19,10 @@ TEST(Monitor, PulseLowShouldFail) {
 }
 
 TEST(Monitor, PulseHighShouldFail) {
-  ASSERT_FALSE(vitalsOk(98.6, 105, 98)); // High pulse
+  ASSERT_FALSE(vitalsOk(98.6, 105, 98));  // High pulse
 }
 
 TEST(Monitor, Spo2LowShouldFail) {
   ASSERT_FALSE(vitalsOk(98.6, 72, 85));  // Low SpO₂
 }
+
