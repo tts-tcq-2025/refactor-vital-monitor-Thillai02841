@@ -41,7 +41,6 @@ void blinkWarning(int secondsDuration = 6) {
 // Helper: Collect all abnormal vitals
 std::vector<std::string> collectCriticalVitals(
     const std::vector<std::pair<float, VitalThreshold>>& vitals) {
-    
     std::vector<std::string> messages;
     for (const auto& vital : vitals) {
         VitalStatus result = checkVital(vital.first, vital.second);
