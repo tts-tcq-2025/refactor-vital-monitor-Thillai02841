@@ -39,14 +39,17 @@ int vitalsOk(float temperature, float pulseRate, float spo2) {
         checkVital(spo2, 90, 100, "Oxygen Saturation")
     };
 
-    auto it = std::find_if(results.begin(), results.end(),
-                           [](const VitalStatus& s){ return !s.ok; });
+    bool anyCritical = false;
+    for (const auto& result : results) {
+        if (!result.ok) {
+            cout << result.message << "\n";
+            anyCritical = true;
+        }
+    }
 
-    if (it != results.end()) {
-        cout << it->message << "\n";
+    if (anyCritical) {
         blinkWarning();
         return 0;
     }
     return 1;
 }
-
